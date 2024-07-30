@@ -12,7 +12,7 @@ from langchain_chroma import Chroma
 import requests
 from bs4 import BeautifulSoup
 from langchain.schema.document import Document
-
+import urllib.parse
 
 CHROMA_PATH = "chroma"
 DATA_PATH = "data"
@@ -23,21 +23,30 @@ def main():
     # Check if the database should be cleared (using the --reset flag).
     parser = argparse.ArgumentParser()
     parser.add_argument("--reset", action="store_true", help="Reset the database.")
+    parser.add_argument('url', type=str, help='The URL to process')
+
     args = parser.parse_args()
     if args.reset:
         print("✨ Clearing Database")
         clear_database()
 
-    # Create (or update) the data store.
-    documents = load_documents()
-    print(documents)
+    if args.url.startswith("url="):
+        url = args.url.split('=', 1)[1]
+        print(f"🌐 Loading Documents from Webpage: {url}")
+        documents = load_documents_from_webpage(url)
+    else:
+        # Create (or update) the data store.
+        documents = load_documents()
+    
+    #print(documents)
     chunks = split_documents(documents)
-    add_to_chroma(chunks)
+    #add_to_chroma(chunks)
 
-def load_documents_from_webpage(url: str, max_depth: int = 4) -> list[Document]:
+def load_documents_from_webpage(url: str, max_depth: int = 1) -> list[Document]:
     documents = []
     visited_urls = set()
     depth = 0
+    print(f"🌐 Loading documents from {url}")
 
     def recursive_load(url: str, current_depth: int):
         nonlocal depth
@@ -55,21 +64,22 @@ def load_documents_from_webpage(url: str, max_depth: int = 4) -> list[Document]:
         try:
             response = requests.get(url)
             soup = BeautifulSoup(response.content, "html.parser")
-            text = soup.get_text()
-            document = Document(text=text, metadata={"source": url})
+            text = soup.text
+            document = Document(page_content=text, metadata={"source": url})
+            print(document)
             documents.append(document)
 
-            links = soup.find_all("a")
+            links = soup.find_all("a", href=True)
             for link in links:
+                print(f"🔗 Found link: {link.get('href')}")
                 href = link.get("href")
-                if href.startswith("http"):
+                if href.startswith("https"):
                     recursive_load(href, current_depth + 1)
         except Exception as e:
             print(f"Error loading document from {url}: {e}")
 
     recursive_load(url, 0)
     print(f"🌐 Loaded {len(documents)} documents from {depth} levels deep")
-
     return documents
 
 def load_documents():
