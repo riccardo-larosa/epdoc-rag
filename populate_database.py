@@ -6,6 +6,7 @@ from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from get_embedding_function import get_embedding_function
+from recursive_loader import get_recursive_docs
 #from langchain.vectorstores.chroma import Chroma
 #from langchain_community.vectorstores import Chroma
 from langchain_chroma import Chroma
@@ -33,13 +34,14 @@ def main():
     if args.url.startswith("url="):
         url = args.url.split('=', 1)[1]
         print(f"🌐 Loading Documents from Webpage: {url}")
-        documents = load_documents_from_webpage(url)
+        #documents = load_documents_from_webpage(url)
+        documents = get_recursive_docs(url)
     else:
         # Create (or update) the data store.
         documents = load_documents()
     
     #print(documents)
-    chunks = split_documents(documents)
+    #chunks = split_documents(documents)
     #add_to_chroma(chunks)
 
 def load_documents_from_webpage(url: str, max_depth: int = 1) -> list[Document]:
@@ -49,6 +51,7 @@ def load_documents_from_webpage(url: str, max_depth: int = 1) -> list[Document]:
     print(f"🌐 Loading documents from {url}")
 
     def recursive_load(url: str, current_depth: int):
+        ### dont use this
         nonlocal depth
         if current_depth > depth:
             depth = current_depth
@@ -66,7 +69,8 @@ def load_documents_from_webpage(url: str, max_depth: int = 1) -> list[Document]:
             soup = BeautifulSoup(response.content, "html.parser")
             text = soup.text
             document = Document(page_content=text, metadata={"source": url})
-            print(document)
+            #print(document)
+            print(f"📄 Loaded document from {url}")
             documents.append(document)
 
             links = soup.find_all("a", href=True)

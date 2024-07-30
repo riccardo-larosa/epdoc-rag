@@ -21,6 +21,17 @@ python3 -m pip install -r requirements.txt
 deactivate
 ```
 
+* Load VectorDB using the PDFs in the data directory
+```bash
+python3 populate_database.py
+```
+Use the flag ```--reset``` to clear the database
+
+* Query the data
+```bash
+python3 query_data.py "how many destination tickets can a player have?" 
+```
+
 
 * Run the Streamlit App
 ```bash
