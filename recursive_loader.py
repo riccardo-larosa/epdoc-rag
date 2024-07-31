@@ -35,12 +35,12 @@ def get_recursive_docs(url):
 
     return docs 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('url', type=str, help='The URL to process')
-args = parser.parse_args()
-
-if args.url.startswith("url="):
-    url = args.url.split('=', 1)[1]
-    print(f"🌐 Loading Documents from Webpage: {url}")
-    documents = get_recursive_docs(url)
+#parser = argparse.ArgumentParser()
+#parser.add_argument('url', type=str, help='The URL to process')
+#args = parser.parse_args()
+#
+#if args.url.startswith("url="):
+#    url = args.url.split('=', 1)[1]
+#    print(f"🌐 Loading Documents from Webpage: {url}")
+#    documents = get_recursive_docs(url)
 

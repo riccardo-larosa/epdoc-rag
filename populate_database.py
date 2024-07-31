@@ -13,7 +13,7 @@ from langchain_chroma import Chroma
 import requests
 from bs4 import BeautifulSoup
 from langchain.schema.document import Document
-import urllib.parse
+#import urllib.parse
 
 CHROMA_PATH = "chroma"
 DATA_PATH = "data"
@@ -24,67 +24,27 @@ def main():
     # Check if the database should be cleared (using the --reset flag).
     parser = argparse.ArgumentParser()
     parser.add_argument("--reset", action="store_true", help="Reset the database.")
-    parser.add_argument('url', type=str, help='The URL to process')
-
+    parser.add_argument("--url", type=str, help="The URL to process")
+    parser.add_argument("--pdf", action="store_true", help="Process the PDFs in the data directory.")
     args = parser.parse_args()
+
     if args.reset:
         print("✨ Clearing Database")
         clear_database()
 
-    if args.url.startswith("url="):
-        url = args.url.split('=', 1)[1]
+    if args.url: 
+        # Load the documents from the webpage.
+        url = args.url 
         print(f"🌐 Loading Documents from Webpage: {url}")
-        #documents = load_documents_from_webpage(url)
         documents = get_recursive_docs(url)
-    else:
-        # Create (or update) the data store.
+    
+    if args.pdf:
+        # Create (or update) the data store using the PDFs in the data directory.
         documents = load_documents()
     
     #print(documents)
-    #chunks = split_documents(documents)
-    #add_to_chroma(chunks)
-
-def load_documents_from_webpage(url: str, max_depth: int = 1) -> list[Document]:
-    documents = []
-    visited_urls = set()
-    depth = 0
-    print(f"🌐 Loading documents from {url}")
-
-    def recursive_load(url: str, current_depth: int):
-        ### dont use this
-        nonlocal depth
-        if current_depth > depth:
-            depth = current_depth
-
-        if current_depth > max_depth:
-            return
-
-        if url in visited_urls:
-            return
-
-        visited_urls.add(url)
-
-        try:
-            response = requests.get(url)
-            soup = BeautifulSoup(response.content, "html.parser")
-            text = soup.text
-            document = Document(page_content=text, metadata={"source": url})
-            #print(document)
-            print(f"📄 Loaded document from {url}")
-            documents.append(document)
-
-            links = soup.find_all("a", href=True)
-            for link in links:
-                print(f"🔗 Found link: {link.get('href')}")
-                href = link.get("href")
-                if href.startswith("https"):
-                    recursive_load(href, current_depth + 1)
-        except Exception as e:
-            print(f"Error loading document from {url}: {e}")
-
-    recursive_load(url, 0)
-    print(f"🌐 Loaded {len(documents)} documents from {depth} levels deep")
-    return documents
+    chunks = split_documents(documents)
+    add_to_chroma(chunks)
 
 def load_documents():
     document_loader = PyPDFDirectoryLoader(DATA_PATH)

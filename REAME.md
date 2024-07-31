@@ -29,9 +29,19 @@ Use the flag ```--reset``` to clear the database
 
 * Query the data
 ```bash
-python3 query_data.py "how many destination tickets can a player have?" 
+python3 query_data.py "How do I manage an active subscription?" 
 ```
 
+* Load VectorDB using the recursive URL loader 
+```bash
+python3 populate_database.py url=https://elasticpath.dev/docs/commerce-manager/product-experience-manager/Products/overview   
+```
+Use the flag ```--reset``` to clear the database
+
+* Query the data
+```bash
+python3 query_data.py "how many destination tickets can a player have?" 
+```
 
 * Run the Streamlit App
 ```bash
