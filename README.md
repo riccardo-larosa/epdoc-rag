@@ -23,18 +23,7 @@ deactivate
 
 * Load VectorDB using the PDFs in the data directory
 ```bash
-python3 populate_database.py
-```
-Use the flag ```--reset``` to clear the database
-
-* Query the data
-```bash
-python3 query_data.py "How do I manage an active subscription?" 
-```
-
-* Load VectorDB using the recursive URL loader 
-```bash
-python3 populate_database.py url=https://elasticpath.dev/docs/commerce-manager/product-experience-manager/Products/overview   
+python3 populate_database.py --pdf
 ```
 Use the flag ```--reset``` to clear the database
 
@@ -43,12 +32,23 @@ Use the flag ```--reset``` to clear the database
 python3 query_data.py "how many destination tickets can a player have?" 
 ```
 
-* Run the Streamlit App
+* Load VectorDB using the recursive URL loader 
 ```bash
-streamlit run somethingwebapp_rag.py
+python3 populate_database.py --url https://elasticpath.dev/docs/commerce-manager/product-experience-manager/Products/overview   
+```
+Use the flag ```--reset``` to clear the database
+
+* Query the data
+```bash
+python3 query_data.py "How do I manage an active subscription?" 
+python3 query_data.py "I would like to create a product for jeans with legth and waist size. Give me all the steps to do that and some sample data"  
 ```
 
-### How it Works?
+* Run the Streamlit App
+```bash
+streamlit run chat_with_llm.py 
+```
+
 
 - 
 
