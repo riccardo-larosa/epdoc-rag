@@ -7,6 +7,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from get_embedding_function import get_embedding_function
 from recursive_loader import get_recursive_docs
+from recursive_md_loader import load_md_files
 #from langchain.vectorstores.chroma import Chroma
 #from langchain_community.vectorstores import Chroma
 from langchain_chroma import Chroma
@@ -26,11 +27,13 @@ def main():
     parser.add_argument("--reset", action="store_true", help="Reset the database.")
     parser.add_argument("--url", type=str, help="The URL to process")
     parser.add_argument("--pdf", action="store_true", help="Process the PDFs in the data directory.")
+    parser.add_argument("--vectordb_path", type=str, help="The path to the vector database.")
+    parser.add_argument("--data_path", type=str, help="The path to the data directory.")
     args = parser.parse_args()
 
     if args.reset:
         print("✨ Clearing Database")
-        clear_database()
+        clear_database(args.vectordb_path)
 
     if args.url: 
         # Load the documents from the webpage.
@@ -42,9 +45,13 @@ def main():
         # Create (or update) the data store using the PDFs in the data directory.
         documents = load_documents()
     
+    if args.data_path:
+        DATA_PATH = args.data_path
+        documents = load_md_files(DATA_PATH)
+
     #print(documents)
     chunks = split_documents(documents)
-    add_to_chroma(chunks)
+    add_to_chroma(chunks, args.vectordb_path)
 
 def load_documents():
     document_loader = PyPDFDirectoryLoader(DATA_PATH)
@@ -61,8 +68,10 @@ def split_documents(documents: list[Document]):
     return text_splitter.split_documents(documents)
 
 
-def add_to_chroma(chunks: list[Document]):
+def add_to_chroma(chunks: list[Document], vectordb_path):
     # Load the existing database.
+    if vectordb_path:
+        CHROMA_PATH = vectordb_path
     db = Chroma(
         persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
     )
@@ -119,9 +128,9 @@ def calculate_chunk_ids(chunks):
     return chunks
 
 
-def clear_database():
-    if os.path.exists(CHROMA_PATH):
-        shutil.rmtree(CHROMA_PATH)
+def clear_database(vectordb_path):
+    if os.path.exists(vectordb_path):
+        shutil.rmtree(vectordb_path)
 
 
 if __name__ == "__main__":

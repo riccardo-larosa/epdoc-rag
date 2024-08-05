@@ -6,7 +6,7 @@ from langchain_community.llms.ollama import Ollama
 
 from get_embedding_function import get_embedding_function
 
-CHROMA_PATH = "chroma"
+CHROMA_PATH = "chroma_md"
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
