@@ -50,6 +50,10 @@ def main():
         documents = load_md_files(DATA_PATH)
 
     #print(documents)
+    if not documents:
+        print("No documents to process.")
+        return
+    
     chunks = split_documents(documents)
     add_to_chroma(chunks, args.vectordb_path)
 

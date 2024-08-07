@@ -35,6 +35,10 @@ python3 query_data.py "how many destination tickets can a player have?"
 * Load VectorDB using the recursive URL loader 
 ```bash
 python3 populate_database.py --url https://elasticpath.dev/docs/commerce-manager/product-experience-manager/Products/overview   
+python3 populate_database.py --url https://elasticpath.dev/docs/commerce-manager/commerce-extension/commerce-extension-in-cm 
+python3 populate_database.py --url https://elasticpath.dev/docs/commerce-manager/promotions-builder 
+python3 populate_database.py --url https://elasticpath.dev/docs/commerce-manager/organizations/home-page
+python3 populate_database.py --url https://elasticpath.dev/guides
 ```
 Use the flag ```--reset``` to clear the database
 
@@ -49,7 +53,14 @@ python3 query_data.py "I would like to create a product for jeans with legth and
 streamlit run chat_with_llm.py 
 ```
 
+I would like to create a product for jeans with length and waist size as variations. 
+Give me all the steps to do that and some sample data to do this  in Commerce Manager
 
+How do I create a 20% discount promotion for cart that contains shoes over $100
+
+```bash
+python populate_database.py --reset --vectordb_path chroma_md --data_path ./data_md/docs/commerce-manager
+```
 - 
 
 ## Credit
