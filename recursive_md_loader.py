@@ -6,7 +6,7 @@ from langchain_core.documents import Document
 
 MD_DATA_PATH = "./data_md/docs/commerce-manager"
 
-def load_md_files(directory):
+def get_md_files(directory):
     # Find all .md files in the directory and subdirectories
     md_files = glob.glob(os.path.join(directory, '**', '*.md'), recursive=True)
     print(f"Found {len(md_files)} .md files")

@@ -1,5 +1,4 @@
 import argparse
-#from langchain.vectorstores.chroma import Chroma
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
@@ -42,7 +41,7 @@ def query_rag(query_text: str):
     print(prompt)
 
     #model = Ollama(model="mistral")
-    model = Ollama(model="llama3")
+    model = Ollama(model="llama3.1")
     response_text = model.invoke(prompt)
 
     sources = [doc.metadata.get("id", None) for doc, _score in results]
