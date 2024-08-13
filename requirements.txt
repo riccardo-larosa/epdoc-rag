@@ -6,3 +6,10 @@ boto3
 langchain-community
 langchain_chroma
 bs4
+unstructured
+markdown
+python-dotenv
+openai
+langgraph
+ollama
+langchain_openai

@@ -2,7 +2,7 @@
 .DS_Store
 backup
 chroma
-chroma_md
+chroma_md*
 data_md
 *.md # Markdown files
 

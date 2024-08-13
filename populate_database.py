@@ -31,11 +31,15 @@ def main():
     parser.add_argument("--data_path", type=str, help="The path to the data directory.")
     parser.add_argument("--reset", action="store_true", help="Reset the database.")
     parser.add_argument("--vectordb_path", type=str, help="The path to the vector database.")
+    parser.add_argument("--chunk_size", type=int, help="The size of the chunks.")
     args = parser.parse_args()
+
+    CHUNK_SIZE = args.chunk_size
+    CHROMA_PATH = args.vectordb_path
 
     if args.reset:
         print("✨ Clearing Database")
-        clear_database(args.vectordb_path)
+        clear_database(CHROMA_PATH + "_" + str(CHUNK_SIZE))
 
     if args.url: 
         # Load the documents from the webpage.
@@ -52,20 +56,23 @@ def main():
         DATA_PATH = args.data_path
         documents = get_md_files(DATA_PATH)
 
+    if args.chunk_size:
+        CHUNK_SIZE = args.chunk_size
+
     #print(documents)
     if not documents:
         print("No documents to process.")
         return
     
-    chunks = split_documents(documents)
-    add_to_chroma(chunks, args.vectordb_path)
+    chunks = split_documents(CHUNK_SIZE, documents)
+    add_to_chroma(chunks, CHROMA_PATH + "_" + str(CHUNK_SIZE))
 
 
 
-def split_documents(documents: list[Document]):
+def split_documents(chunk_size, documents: list[Document]):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,
-        chunk_overlap=80,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_size * 0.1,
         length_function=len,
         is_separator_regex=False,
     )
@@ -75,7 +82,9 @@ def split_documents(documents: list[Document]):
 def add_to_chroma(chunks: list[Document], vectordb_path):
     # Load the existing database.
     if vectordb_path:
-        CHROMA_PATH = vectordb_path
+        #make CHROMA_PATH equal to vectordb_path and append CHUNK_SIZE to it
+        CHROMA_PATH = vectordb_path 
+        #CHROMA_PATH = vectordb_path
     db = Chroma(
         persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
     )

@@ -23,7 +23,18 @@ deactivate
 
 * Load VectorDB using the PDFs in the data directory
 ```bash
-python3 populate_database.py --pdf
+usage: populate_database.py [-h] [--url URL] [--md] [--pdf] [--data_path DATA_PATH] [--reset] [--vectordb_path VECTORDB_PATH]
+
+optional arguments:
+  -h, --help                show this help message and exit
+  --url URL                 The URL to process
+  --md                      Process the MD files in the data directory.
+  --pdf                     Process the PDFs in the data directory.
+  --data_path DATA_PATH     The path to the data directory.
+  --reset                   Reset the database.
+  --vectordb_path VECTORDB_PATH
+                            The path to the vector database.
+  --chunk_size              Size of the Chunks
 ```
 Use the flag ```--reset``` to clear the database
 
@@ -59,7 +70,7 @@ Give me all the steps to do that and some sample data to do this  in Commerce Ma
 How do I create a 20% discount promotion for cart that contains shoes over $100
 
 ```bash
-python populate_database.py --reset --vectordb_path chroma_md --data_path ./data_md/docs/commerce-manager
+python populate_database.py --reset --vectordb_path chroma_md --data_path ./data_md/docs/commerce-manager --chunk_size 2000
 ```
 - 
 
