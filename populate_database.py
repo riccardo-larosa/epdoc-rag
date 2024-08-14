@@ -9,19 +9,21 @@ from get_embedding_function import get_embedding_function
 from recursive_url_loader import get_urls_docs
 from recursive_md_loader import get_md_files
 from recursive_pdf_loader import get_pdfs
-#from langchain.vectorstores.chroma import Chroma
-#from langchain_community.vectorstores import Chroma
 from langchain_chroma import Chroma
+from langchain_openai import OpenAIEmbeddings
 import requests
 from bs4 import BeautifulSoup
-from langchain.schema.document import Document
-#import urllib.parse
+from dotenv import load_dotenv
 
 CHROMA_PATH = "chroma"
 DATA_PATH = "data"
+OPEN_API_KEY = ""
 
 
 def main():
+
+    load_dotenv()
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
     # Check if the database should be cleared (using the --reset flag).
     parser = argparse.ArgumentParser()
@@ -84,9 +86,11 @@ def add_to_chroma(chunks: list[Document], vectordb_path):
     if vectordb_path:
         #make CHROMA_PATH equal to vectordb_path and append CHUNK_SIZE to it
         CHROMA_PATH = vectordb_path 
-        #CHROMA_PATH = vectordb_path
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     db = Chroma(
-        persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
+        #persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
+            persist_directory=CHROMA_PATH, 
+            embedding_function=embeddings
     )
     
     # Calculate Page IDs.

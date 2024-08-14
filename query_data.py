@@ -2,6 +2,7 @@ import argparse
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
+from langchain_openai import OpenAIEmbeddings
 
 from get_embedding_function import get_embedding_function
 
@@ -30,7 +31,7 @@ def main():
 def query_rag(query_text: str):
     # Prepare the DB.
     embedding_function = get_embedding_function()
-    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
+    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=OpenAIEmbeddings())
 
     # Search the DB.
     results = db.similarity_search_with_score(query_text, k=5)

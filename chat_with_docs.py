@@ -71,8 +71,11 @@ def main():
         st.chat_message("user").write(prompt)
 
     # Prepare the DB.
-        embedding_function = get_embedding_function()
-        db = Chroma(persist_directory=vector_db, embedding_function=get_embedding_function())
+        #embedding_function = get_embedding_function()
+        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+        db = Chroma(persist_directory=vector_db, embedding_function=embeddings)
+        #db = Chroma(persist_directory=vector_db, embedding_function=get_embedding_function())
+        #db = Chroma(persist_directory=vector_db, embedding_function=OpenAIEmbeddings())
 
     # Search the DB.
         results = db.similarity_search_with_score(prompt, k=5)
