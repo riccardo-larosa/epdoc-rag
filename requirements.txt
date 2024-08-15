@@ -13,3 +13,5 @@ openai
 langgraph
 ollama
 langchain_openai
+pymongo
+langchain_mongodb

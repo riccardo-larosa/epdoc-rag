@@ -70,7 +70,8 @@ Give me all the steps to do that and some sample data to do this  in Commerce Ma
 How do I create a 20% discount promotion for cart that contains shoes over $100
 
 ```bash
-python populate_database.py --reset --vectordb_path chroma_md --data_path ./data_md/docs/commerce-manager --chunk_size 2000
+python populate_database.py --reset --vectordb_path chroma_md --md --data_path ./data_md/docs/commerce-manager --chunk_size 2000 
+python populate_database.py --vectordb_path chroma_md --md --data_path ./data_md/guides --chunk_size 2000 
 ```
 - 
 

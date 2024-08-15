@@ -3,6 +3,7 @@
 backup
 chroma
 chroma_md*
+MONGODB
 data_md
 *.md # Markdown files
 

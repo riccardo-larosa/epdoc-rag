@@ -9,10 +9,13 @@ from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
 #from langchain.chat_models import ChatOpenAI
 #from langchain_community.chat_models import ChatOpenAI
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_community.embeddings.ollama import OllamaEmbeddings
 from langchain_community.llms.ollama import Ollama
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from openai import OpenAI
+from langchain_mongodb import MongoDBAtlasVectorSearch
+from pymongo import MongoClient
 
 from get_embedding_function import get_embedding_function
 
@@ -35,8 +38,12 @@ def extract_model_names(models_info: list) -> tuple:
     return tuple(models)
 
 def main():
-    load_dotenv()
+    load_dotenv(override=True)
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    VECTOR_DB = os.getenv("VECTOR_DB")
+    MONGODB_ATLAS_CLUSTER_URI = os.getenv("MONGODB_ATLAS_CLUSTER_URI")
+    DB_NAME = os.getenv("DB_NAME")
+    COLLECTION_NAME = os.getenv("COLLECTION_NAME")
 
     models_info = ollama.list()
     available_models = extract_model_names(models_info)
@@ -70,14 +77,33 @@ def main():
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.chat_message("user").write(prompt)
 
-    # Prepare the DB.
-        #embedding_function = get_embedding_function()
-        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-        db = Chroma(persist_directory=vector_db, embedding_function=embeddings)
-        #db = Chroma(persist_directory=vector_db, embedding_function=get_embedding_function())
-        #db = Chroma(persist_directory=vector_db, embedding_function=OpenAIEmbeddings())
+        # Prepare the DB.
+        #embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+        embeddings = OllamaEmbeddings(model="nomic-embed-text")
 
-    # Search the DB.
+        if vector_db == "MONGODB":
+            print("🔗 Connecting to MongoDB Atlas")
+            # Connect to your Atlas cluster
+            client = MongoClient(MONGODB_ATLAS_CLUSTER_URI)
+            db_name = "langchain_db"
+            collection_name = "epdocs"
+            atlas_collection = client[db_name][collection_name]
+            vector_search_index = "vector_index"
+
+            # Create a MongoDBAtlasVectorSearch object
+            db = MongoDBAtlasVectorSearch.from_connection_string(
+                MONGODB_ATLAS_CLUSTER_URI,
+                db_name + "." + collection_name,
+                embeddings,
+                index_name = vector_search_index
+            )
+
+        else:
+
+            db = Chroma(persist_directory=vector_db, embedding_function=embeddings)
+
+        # Search the DB.
+        print(db)
         results = db.similarity_search_with_score(prompt, k=5)
         print(results)
 

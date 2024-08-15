@@ -6,11 +6,14 @@ import shutil
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from get_embedding_function import get_embedding_function
+from langchain_community.embeddings.ollama import OllamaEmbeddings
 from recursive_url_loader import get_urls_docs
 from recursive_md_loader import get_md_files
 from recursive_pdf_loader import get_pdfs
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
+from langchain_mongodb import MongoDBAtlasVectorSearch
+from pymongo import MongoClient
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -18,12 +21,14 @@ from dotenv import load_dotenv
 CHROMA_PATH = "chroma"
 DATA_PATH = "data"
 OPEN_API_KEY = ""
-
+load_dotenv( override=True)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+VECTOR_DB = os.getenv("VECTOR_DB")
+MONGODB_ATLAS_CLUSTER_URI = os.getenv("MONGODB_ATLAS_CLUSTER_URI")
+DB_NAME = os.getenv("DB_NAME")
+COLLECTION_NAME = os.getenv("COLLECTION_NAME")
 
 def main():
-
-    load_dotenv()
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
     # Check if the database should be cleared (using the --reset flag).
     parser = argparse.ArgumentParser()
@@ -67,7 +72,7 @@ def main():
         return
     
     chunks = split_documents(CHUNK_SIZE, documents)
-    add_to_chroma(chunks, CHROMA_PATH + "_" + str(CHUNK_SIZE))
+    add_to_vectorDB(chunks, VECTOR_DB, CHROMA_PATH + "_" + str(CHUNK_SIZE))
 
 
 
@@ -81,24 +86,51 @@ def split_documents(chunk_size, documents: list[Document]):
     return text_splitter.split_documents(documents)
 
 
-def add_to_chroma(chunks: list[Document], vectordb_path):
+def add_to_vectorDB(chunks: list[Document], vector_db, vectordb_path):
     # Load the existing database.
     if vectordb_path:
         #make CHROMA_PATH equal to vectordb_path and append CHUNK_SIZE to it
         CHROMA_PATH = vectordb_path 
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-    db = Chroma(
-        #persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
-            persist_directory=CHROMA_PATH, 
-            embedding_function=embeddings
-    )
+    
+    #embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    embeddings = OllamaEmbeddings(model="nomic-embed-text")
+    
+    if vector_db == "MONGODB":
+        print("🔗 Connecting to MongoDB Atlas")
+         # Connect to your Atlas cluster
+        client = MongoClient(MONGODB_ATLAS_CLUSTER_URI)
+        db_name = "langchain_db"
+        collection_name = "epdocs"
+        atlas_collection = client[db_name][collection_name]
+        vector_search_index = "vector_index"
+
+        # Create a MongoDBAtlasVectorSearch object
+        db = MongoDBAtlasVectorSearch.from_connection_string(
+            MONGODB_ATLAS_CLUSTER_URI,
+            db_name + "." + collection_name,
+            #OpenAIEmbeddings(disallowed_special=(), model="text-embedding-3-small") ,
+            OllamaEmbeddings(model="nomic-embed-text"),
+            index_name = vector_search_index
+        )
+
+    else:
+        db = Chroma(
+                persist_directory=CHROMA_PATH, 
+                embedding_function=embeddings
+        )
     
     # Calculate Page IDs.
     chunks_with_ids = calculate_chunk_ids(chunks)
 
     # Add or Update the documents.
-    existing_items = db.get(include=[])  # IDs are always included by default
-    existing_ids = set(existing_items["ids"])
+    if vector_db == "MONGODB":
+        existing_items = atlas_collection.find({}, {"_id": 0, "id": 1})
+        existing_items = list(existing_items)
+        existing_ids = {item["id"] for item in existing_items}
+    else:
+        existing_items = db.get(include=[])  # IDs are always included by default in Chroma.
+        existing_ids = set(existing_items["ids"])
+
     print(f"Number of existing documents in DB: {len(existing_ids)}")
 
     # Only add documents that don't exist in the DB.
@@ -110,8 +142,8 @@ def add_to_chroma(chunks: list[Document], vectordb_path):
     if len(new_chunks):
         print(f"👉 Adding new documents: {len(new_chunks)}")
         new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
+        #print(db)
         db.add_documents(new_chunks, ids=new_chunk_ids)
-       #db.persist() #not needed anymore
     else:
         print("✅ No new documents to add")
 
