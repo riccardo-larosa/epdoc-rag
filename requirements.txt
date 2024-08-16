@@ -15,3 +15,5 @@ ollama
 langchain_openai
 pymongo
 langchain_mongodb
+streamlit
+pysqlite3-binary
