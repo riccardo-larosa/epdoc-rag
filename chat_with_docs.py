@@ -23,7 +23,7 @@ def get_vector_dbs():
 
     #read a comma separated list from the environment variable
     #return os.getenv("VECTOR_DBS").split(",")
-    return st.secrets("VECTOR_DBS").split(",")
+    return st.secrets["VECTOR_DBS"].split(",")
 
 def extract_model_names(models_info: list) -> tuple:
     """
@@ -40,11 +40,11 @@ def extract_model_names(models_info: list) -> tuple:
 
 def main():
     load_dotenv(override=True)
-    OPENAI_API_KEY = st.secrets("OPENAI_API_KEY")
-    VECTOR_DB = st.secrets("VECTOR_DB")
-    MONGODB_ATLAS_CLUSTER_URI = st.secrets("MONGODB_ATLAS_CLUSTER_URI")
-    DB_NAME = st.secrets("DB_NAME")
-    COLLECTION_NAME = st.secrets("COLLECTION_NAME")
+    OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+    VECTOR_DB = st.secrets["VECTOR_DB"]
+    MONGODB_ATLAS_CLUSTER_URI = st.secrets["MONGODB_ATLAS_CLUSTER_URI"]
+    DB_NAME = st.secrets["DB_NAME"]
+    COLLECTION_NAME = st.secrets["COLLECTION_NAME"]
 
     models_info = ollama.list()
     available_models = extract_model_names(models_info)
