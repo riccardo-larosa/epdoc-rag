@@ -22,7 +22,8 @@ from get_embedding_function import get_embedding_function
 def get_vector_dbs():
 
     #read a comma separated list from the environment variable
-    return os.getenv("VECTOR_DBS").split(",")
+    #return os.getenv("VECTOR_DBS").split(",")
+    return st.secrets("VECTOR_DBS").split(",")
 
 def extract_model_names(models_info: list) -> tuple:
     """
@@ -39,11 +40,11 @@ def extract_model_names(models_info: list) -> tuple:
 
 def main():
     load_dotenv(override=True)
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    VECTOR_DB = os.getenv("VECTOR_DB")
-    MONGODB_ATLAS_CLUSTER_URI = os.getenv("MONGODB_ATLAS_CLUSTER_URI")
-    DB_NAME = os.getenv("DB_NAME")
-    COLLECTION_NAME = os.getenv("COLLECTION_NAME")
+    OPENAI_API_KEY = st.secrets("OPENAI_API_KEY")
+    VECTOR_DB = st.secrets("VECTOR_DB")
+    MONGODB_ATLAS_CLUSTER_URI = st.secrets("MONGODB_ATLAS_CLUSTER_URI")
+    DB_NAME = st.secrets("DB_NAME")
+    COLLECTION_NAME = st.secrets("COLLECTION_NAME")
 
     models_info = ollama.list()
     available_models = extract_model_names(models_info)
@@ -57,6 +58,16 @@ def main():
         st.warning("No Vector Databases available. Please set the VECTOR_DBS environment variable.")
 
     PROMPT_TEMPLATE = """
+    You are knowledgeable about Elastic Path products. You can answer any questions about 
+    Commerce Manager, 
+    Product Experience Manager also known as PXM,
+    Cart and Checkout,
+    Promotions,
+    Composer,
+    Payments
+    Subscriptions,
+    Studio.
+    Build any of the relative links using https://elasticpath.dev as the root
     Answer the question based only on the following context:
     {context}
     ---
@@ -105,20 +116,20 @@ def main():
         # Search the DB.
         print(db)
         results = db.similarity_search_with_score(prompt, k=5)
-        print(results)
+        #print(results)
 
-        context_text = "\n\n--------------------------\n\n".join([doc.page_content for doc, _score in results])
+        context_text = "\n\n\033[32m--------------------------\033[0m\n\n".join([doc.page_content for doc, _score in results])
         prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
         prompt = prompt_template.format(context=context_text, question=prompt)
         print(prompt)
         if selected_model=="OPENAI":
-            print(f"Selected model: OPENAI with {OPENAI_API_KEY}")
+            print(f"Selected model: \033[32m OPENAI with {OPENAI_API_KEY}\033[0m")
             model = ChatOpenAI(temperature=0.7, api_key=OPENAI_API_KEY)
             response_text = model.invoke(prompt)
             print(response_text)
             response_text = response_text.content
         else:      
-            print(f"Selected model: {selected_model}")
+            print(f"Selected model: \033[32m{selected_model}\033[0m")
             model = Ollama(model=selected_model)
             response_text = model.invoke(prompt)
 

@@ -10,6 +10,7 @@ data_md
 # Environments
 .env
 .venv
+secrets.toml
 env/
 venv/
 ENV/
