@@ -51,7 +51,7 @@ def main():
     COLLECTION_NAME = st.secrets["COLLECTION_NAME"]
 
     #models_info = ollama.list()
-    models_info.append("test")
+    models_info = {}
     available_models = extract_model_names(models_info)
     if available_models:
         selected_model = st.selectbox("Pick a model ↓", available_models)
