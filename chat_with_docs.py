@@ -2,9 +2,7 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 import ollama
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 
 
 from langchain.agents import initialize_agent, AgentType
@@ -51,8 +49,11 @@ def main():
     COLLECTION_NAME = st.secrets["COLLECTION_NAME"]
 
     #models_info = ollama.list()
-    models_info = {}
+    models_info = {'models': [{'name': 'test'}]}
+    print (models_info)
+    #models_info = list("test")
     available_models = extract_model_names(models_info)
+    print(available_models)
     if available_models:
         selected_model = st.selectbox("Pick a model ↓", available_models)
 
