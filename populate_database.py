@@ -61,10 +61,12 @@ def main():
     
     if args.md:
         DATA_PATH = args.data_path
+        print(f"🌐 Loading Documents from directory: {DATA_PATH}")
         documents = get_md_files(DATA_PATH)
 
     if args.chunk_size:
         CHUNK_SIZE = args.chunk_size
+        print(f"Chunk Size: {CHUNK_SIZE}")
 
     #print(documents)
     if not documents:
@@ -94,13 +96,15 @@ def add_to_vectorDB(chunks: list[Document], vector_db, vectordb_path):
     
     #embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     embeddings = OllamaEmbeddings(model="nomic-embed-text")
+    print("Using embeddings: ", embeddings)
+    
     
     if vector_db == "MONGODB":
         print("🔗 Connecting to MongoDB Atlas")
          # Connect to your Atlas cluster
         client = MongoClient(MONGODB_ATLAS_CLUSTER_URI)
-        db_name = "langchain_db"
-        collection_name = "epdocs"
+        db_name = DB_NAME #"langchain_db"
+        collection_name = COLLECTION_NAME #"epdocs_openaiembeddings_2000"
         atlas_collection = client[db_name][collection_name]
         vector_search_index = "vector_index"
 
@@ -158,7 +162,7 @@ def calculate_chunk_ids(chunks):
 
     for chunk in chunks:
         source = chunk.metadata.get("source")
-        page = chunk.metadata.get("page")
+        page = chunk.metadata.get("page") #TODO: need to change this to base directory?
         current_page_id = f"{source}:{page}"
 
         # If the page ID is the same as the last one, increment the index.

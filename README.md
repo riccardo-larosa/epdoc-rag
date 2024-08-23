@@ -69,7 +69,14 @@ Give me all the steps to do that and some sample data to do this  in Commerce Ma
 
 How do I create a 20% discount promotion for cart that contains shoes over $100
 
+How do I create a bundle that contains 1 sofa with 3 variations and an optional ottoman with 2 variations
+
+Can I search a custom api field
+
+how do I create a monthly subscription for a shampoo and apply a 5% discount for the first 3 months
+
 ```bash
+python populate_database.py  --vectordb_path chroma_md --md --data_path ./data_md/docs/commerce-manager --chunk_size 2000
 python populate_database.py --reset --vectordb_path chroma_md --md --data_path ./data_md/docs/commerce-manager --chunk_size 2000 
 python populate_database.py --vectordb_path chroma_md --md --data_path ./data_md/guides --chunk_size 2000 
 ```
