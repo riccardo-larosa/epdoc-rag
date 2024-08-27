@@ -16,4 +16,6 @@ langchain_openai
 pymongo
 langchain_mongodb
 streamlit
-pysqlite3-binary
+#pysqlite3-binary
+#for the openapi importer
+openapi-spec-validator
