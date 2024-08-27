@@ -18,12 +18,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 with open("./data_md/openapispecs/commerceextensions/OpenAPISpec.yaml", "r") as f:
     openapi_spec = yaml.safe_load(f)
 
-    #raw_content = f.read()
-    #enc = tiktoken.get_encoding("cl100k_base")
-    #encoding = tiktoken.encoding_for_model("gpt-3.5-turbo").encode(raw_content)
-    #print(f"Raw OpenAPI spec has {len(encoding)} tokens")
-
-    
     endpoints = [
         (route, operation)
         for route, operations in openapi_spec["paths"].items()
@@ -31,7 +25,6 @@ with open("./data_md/openapispecs/commerceextensions/OpenAPISpec.yaml", "r") as 
         if operation in ["get", "post"]
     ]
     print(f"Found {len(endpoints)} endpoints")
-
 
 # Validate the spec (optional)
 #validate_spec(openapi_spec)
@@ -48,6 +41,7 @@ if "tags" in openapi_spec:
     api_data["tags"] = openapi_spec["tags"]
     #print(f"\nTags: {api_data['tags']}")
 
+chunks = []
 # Extract paths and their operations
 for path, path_item in openapi_spec.get('paths', {}).items():
     for method, operation in path_item.items():
@@ -57,11 +51,14 @@ for path, path_item in openapi_spec.get('paths', {}).items():
                 "path": path,
                 "summary": operation.get('summary', ''),
                 "description": operation.get('description', ''),
+                "operationId": operation.get('operationId', ''),
                 "parameters": operation.get('parameters', []),
                 "responses": operation.get('responses', {}),
                 "requestBody": operation.get('requestBody', {})
             }
             api_data["paths"].append(endpoint)
+            chunk = Document(page_content=str(endpoint), metadata=endpoint["metadata"])
+            chunks.append(chunk)
 
 # Extract components (e.g., schemas, parameters)
 if "components" in openapi_spec:
@@ -107,22 +104,27 @@ db = MongoDBAtlasVectorSearch.from_connection_string(
 def split_openapis(api_data):
     chunks = []
     for endpoint in api_data["paths"]:
-        doc = {
-            "summary": endpoint["summary"] + " " + endpoint["description"],
+        doc = {            
             "path": endpoint["path"],
             "method": endpoint["method"],
+            "summary": endpoint["summary"] + " " + endpoint["description"],
             "metadata":{
-                
+                "path": endpoint["path"],
+                "method": endpoint["method"],
                 "parameters": endpoint["parameters"],
                 "responses": endpoint["responses"],
                 "requestBody": endpoint["requestBody"],
-                "id": None
+                "id": None,
+                "source": endpoint["path"]
             }
         }
-        chunk = Document(page_content=doc, metadata=chunk.metadata)
+        chunk = Document(page_content=str(doc), metadata=doc["metadata"])
         chunks.append(chunk)
         encoding = tiktoken.encoding_for_model("gpt-3.5-turbo").encode(chunk.__str__())
         print(f"lenght of chunk {chunk.metadata.get("path")}:{chunk.metadata.get("method")} is {len(encoding)} tokens")
+        #TODO: I really don't need all of this, I can just do this at the beginning 
+        # in the big for loop and then just add the chunk to the db
+        # also I need to save 
 
     return chunks
 
@@ -155,7 +157,7 @@ def calculate_chunk_ids(chunks):
 
     return chunks
 
-chunks = split_openapis(api_data)
+#chunks = split_openapis(api_data)
 chunks_with_ids = calculate_chunk_ids(chunks)
 
 print(f"👉 Adding new documents: {len(chunks)}")
